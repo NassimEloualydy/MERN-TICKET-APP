@@ -1,2 +1,4 @@
 token
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiNjc1ZGNmMjZiOTQwYzUzMzY0YThkMDljIiwiaWF0IjoxNzM0MjAyODA0LCJleHAiOjE3MzY3OTQ4MDR9.STOdj0ACc9x2vQ_65U8U75CHQO7kf31-H53wfrF5qbM
+
+Stad (id,,name,city,nbr_places,adresse,status);
