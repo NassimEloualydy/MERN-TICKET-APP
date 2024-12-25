@@ -68,5 +68,83 @@ exports.deleteTciket=async (req,res)=>{
 }
 
 exports.getData=async (req,res)=>{
-    
+   const {name,price,solde_out,first_name,last_name,stade,is_cheapest,certified_saller,instant_confirmation,qty}=req.body 
+   const searchQuery={}
+   searchQuery.name={$regex:'.*'+name+'.*',$options:'i'}
+   searchQuery.price={$regex:'.*'+price+'.*',$options:'i'}
+   searchQuery.solde_out={$regex:'.*'+solde_out+'.*',$options:'i'}
+   searchQuery.is_cheapest={$regex:'.*'+is_cheapest+'.*',$options:'i'}
+   searchQuery.certified_saller={$regex:'.*'+certified_saller+'.*',$options:'i'}
+   searchQuery.instant_confirmation={$regex:'.*'+instant_confirmation+'.*',$options:'i'}
+   searchQuery.qty={$regex:'.*'+qty+'.*',$options:'i'}
+   const data=await Ticket.find(searchQuery).select().populate([
+    {
+        path:"saller",
+        model:"User",
+        select:['_id','first_name','last_name'],
+        match:{
+            first_name:{$regex:'.*'+first_name+'.*',$options:'i'},
+            last_name:{$regex:'.*'+last_name+'.*',$options:'i'},
+        }
+    },
+    {
+        path:"stade",
+        model:"Stade",
+        select:['_id','name'],
+        match:{
+            name:{$regex:'.*'+stade+'.*',$options:'i'}
+        }
+    }
+   ])
+   if(data)
+    return res.json({data});
+return res.status(400).json({err:data});
 }
+exports.numberOfTicketBySaller=async (req,res)=>{
+    const data=await Ticket.aggregate([
+        {
+            $group:{_id:"saller",count:{$sum:1}}
+        },
+        {
+            $lookup:{
+                from:"users",
+                localField:"_id.saller",
+                foreignField:"saller",
+                as:"saller"
+            }
+        },{
+            $project:{
+                "stade.photo":0,
+                "saller.unwantedField":0
+            }
+        }
+    ])
+    if(data)
+        return res.json({data})
+    return res.status(400).json({err:data})
+}
+// get the number of the ticket by stade
+exports.numberOfTicketByStade=async (req,res)=>{
+const data_new=await Ticket.aggregate([
+    {
+        $group:{_id:"$stade",count:{$sum:1}}
+    },{
+        $lookup:{
+            from:"stades",
+            localField:"_id.stade",
+            foreignField:"stade",
+            as:"stade"
+        }
+    },
+    {
+        $project: {
+"stade.photo": 0, // Exclude 'photo' field
+      "stade.unwantedField": 0    }
+    }
+]) 
+    if(data_new)
+        return res.json({data_new})
+    return res.status(400).json({err:data_new})
+
+}
+
